@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<GridPane style="-fx-background-color:linear-gradient(to left top,#090979,#00d4ff);" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="taas_tech.librarymanagementsystem.library.guiController.SignupController">
+    <padding><Insets bottom="100" left="100" right="100" top="100" /></padding>
+    <TextField fx:id="usernameField" promptText="Username" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+    <PasswordField fx:id="passwordField" promptText="Password" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+    <Text text="" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <Text fill="linear-gradient(to left top,#00d4ff,#02e60c)" fontSmoothingType="LCD" lineSpacing="2.0" strokeWidth="2.0" text="Library Management System!" wrappingWidth="445.0749816894531" GridPane.columnIndex="0" GridPane.rowIndex="1">
+        <cursor>
+            <Cursor fx:constant="S_RESIZE" />
+        </cursor>
+        <font>
+            <Font name="Elephant Italic" size="25.0" />
+        </font></Text>
+    <HBox spacing="10" GridPane.columnIndex="2" GridPane.rowIndex="3">
+        <Button onAction="#handleSignUp" text="Sign Up" />
+        <Button onAction="#goToLogin" text="Login" />
+    </HBox>
+
+    <columnConstraints>
+        <ColumnConstraints />
+      <ColumnConstraints />
+      <ColumnConstraints />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+      <RowConstraints />
+    </rowConstraints>
+</GridPane>
