@@ -17,13 +17,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class IssueBookController {
     @FXML
     private TextField bookIdField;
     @FXML
     private TextField patronIdField;
-
+    @FXML
+    public TextField returnDateField;
     @FXML
     private TableView<Object> tableView;
     @FXML
@@ -39,6 +43,7 @@ public class IssueBookController {
     public void issueBook() {
         String bookIdText = bookIdField.getText();
         String patronIdText = patronIdField.getText();
+        String returnDateText = returnDateField.getText();
         int bookId;
         int patronId;
 
@@ -60,12 +65,13 @@ public class IssueBookController {
             return;
         }
 
-        String sql = "INSERT INTO transactions(bookId, patronId, issueDate) VALUES(?, ?, CURRENT_DATE)";
+        String sql = "INSERT INTO transactions (bookId, patronId, issueDate, returnDate) VALUES (?, ?, CURRENT_DATE, ?)";
 
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, bookId);
             pstmt.setInt(2, patronId);
+            pstmt.setString(3, returnDateText);  // Assuming returnDateText is in a valid date format
             pstmt.executeUpdate();
 
             String updateBookSql = "UPDATE books SET isIssued = 1 WHERE id = ?";
@@ -81,6 +87,7 @@ public class IssueBookController {
             System.out.println(e.getMessage());
         }
     }
+
 
     @FXML
     public void initialize() {
@@ -107,7 +114,8 @@ public class IssueBookController {
                 transaction.setBookId(rs.getInt("bookId"));
                 transaction.setPatronId(rs.getInt("patronId"));
                 transaction.setIssueDate(rs.getDate("issueDate").toLocalDate());
-                transaction.setReturnDate(rs.getDate("returnDate") != null ? rs.getDate("returnDate").toLocalDate() : null);
+                transaction.setReturnDate(rs.getDate("returnDate") != null ? rs.getDate("returnDate").toLocalDate() :
+                        null);
                 transactions.add(transaction);
             }
 
@@ -144,4 +152,13 @@ public class IssueBookController {
     public void Exit() {
         Platform.exit();
     }
+
+
+//    private LocalDate DateParser(String inputString) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//        LocalDate parsedDate = LocalDate.parse(inputString, formatter);
+//        return parsedDate;
+//
+//    }
+
 }
