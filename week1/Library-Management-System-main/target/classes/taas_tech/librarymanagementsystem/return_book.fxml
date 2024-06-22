@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+
+<?import javafx.scene.layout.HBox?>
+<GridPane xmlns:fx="http://javafx.com/fxml" fx:controller="taas_tech.librarymanagementsystem.library.guiController.ReturnBookController"
+          prefHeight="400" prefWidth="600"          style="-fx-background-color:linear-gradient(to left top,#090979,#00d4ff);">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+    <TextField fx:id="bookIdField" promptText="Book ID" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <HBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="11">
+        <Button text="Add Book" onAction="#goToaddBook"  style="-fx-background-color: #4caf50; -fx-text-fill: #ffffff;" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <Button text="Issue Book" onAction="#goToissueBook" style="-fx-background-color: #2196f3; -fx-text-fill: #ffffff;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Button text="Return Book" onAction="#returnBook"  style="-fx-background-color: #ff9800; -fx-text-fill: #ffffff;" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <Button text="Register Patron" onAction="#goToRegisterPatron"  style="-fx-background-color: #9c27b0; -fx-text-fill: #ffffff;" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+        <Button text="Exit" onAction="#Exit" style="-fx-background-color: #f44336; -fx-text-fill: #ffffff;" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+    </HBox>
+</GridPane>
