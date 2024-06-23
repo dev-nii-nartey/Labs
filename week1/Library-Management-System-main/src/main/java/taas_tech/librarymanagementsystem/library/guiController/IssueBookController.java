@@ -65,15 +65,27 @@ public class IssueBookController {
             return;
         }
 
-        String sql = "INSERT INTO transactions (bookId, patronId, issueDate, returnDate) VALUES (?, ?, CURRENT_DATE, ?)";
+        LocalDate returnDate;
+        try {
+            returnDate = LocalDate.parse(returnDateText); // Parse returnDateText to LocalDate
+        } catch (DateTimeParseException e) {
+            showAlert("Invalid Date", "Return date must be in yyyy-MM-dd format.");
+            return;
+        }
+
+        Transaction transaction = new Transaction();
+        String sql = "INSERT INTO transactions (bookId, patronId, issueDate, returnDate) VALUES (?, ?, CURRENT_DATE, " +
+                "?)";
+
 
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, bookId);
             pstmt.setInt(2, patronId);
-            pstmt.setString(3, returnDateText);  // Assuming returnDateText is in a valid date format
+            pstmt.setDate(3, java.sql.Date.valueOf(returnDate));
             pstmt.executeUpdate();
 
+            // Update books table
             String updateBookSql = "UPDATE books SET isIssued = 1 WHERE id = ?";
             try (PreparedStatement pstmtUpdate = conn.prepareStatement(updateBookSql)) {
                 pstmtUpdate.setInt(1, bookId);
@@ -114,8 +126,7 @@ public class IssueBookController {
                 transaction.setBookId(rs.getInt("bookId"));
                 transaction.setPatronId(rs.getInt("patronId"));
                 transaction.setIssueDate(rs.getDate("issueDate").toLocalDate());
-                transaction.setReturnDate(rs.getDate("returnDate") != null ? rs.getDate("returnDate").toLocalDate() :
-                        null);
+                transaction.setReturnDate(rs.getDate("returnDate") != null ? rs.getDate("returnDate").toLocalDate() : null);
                 transactions.add(transaction);
             }
 
@@ -152,13 +163,4 @@ public class IssueBookController {
     public void Exit() {
         Platform.exit();
     }
-
-
-//    private LocalDate DateParser(String inputString) {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//        LocalDate parsedDate = LocalDate.parse(inputString, formatter);
-//        return parsedDate;
-//
-//    }
-
 }

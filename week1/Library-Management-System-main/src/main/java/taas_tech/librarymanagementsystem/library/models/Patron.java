@@ -1,7 +1,7 @@
 package taas_tech.librarymanagementsystem.library.models;
 
 
-public class Patron {
+public class Patron extends LibraryResource {
     private int id;
     private String name;
     private String email;

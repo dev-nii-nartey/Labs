@@ -1,6 +1,6 @@
 package taas_tech.librarymanagementsystem.library.models;
 
-public class Book {
+public class Book extends LibraryResource {
     private int id;
     private String title;
     private String author;

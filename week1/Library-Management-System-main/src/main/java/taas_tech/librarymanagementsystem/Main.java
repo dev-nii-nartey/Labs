@@ -16,52 +16,63 @@ public class Main extends Application {
         Main.primaryStage = primaryStage;
         DatabaseHelper.createTables();
         primaryStage.setTitle("Library Management System");
-        showSignupScreen();
+        showSignupScreen();  // Start with the signup screen
     }
 
     public static void showSignupScreen() throws IOException {
+        setFixedSize(800, 500);  // Set the size for login/signup screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("signup.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 300);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
     public static void showLoginScreen() throws IOException {
+        setFixedSize(800, 500);  // Set the size for login/signup screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("login.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     public static void showAddBookScreen() throws IOException {
+        setFixedSize(800, 600);  // Set the size for add book/register patron screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("add_book.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     public static void showIssueBookScreen() throws IOException {
+        setFixedSize(600, 500);  // Set the size for issue book/return book screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("issue_book.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     public static void showRegisterPatronScreen() throws IOException {
+        setFixedSize(600, 500);  // Set the size for add book/register patron screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("register_patron.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     public static void showReturnBookScreen() throws IOException {
+        setFixedSize(600, 500);  // Set the size for issue book/return book screens
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("return_book.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+        Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    public static void main(String[] args) {
+    private static void setFixedSize(int width, int height) {
+        primaryStage.setWidth(width);
+        primaryStage.setHeight(height);
+    }
 
+    public static void main(String[] args) {
         launch(args);
     }
 }

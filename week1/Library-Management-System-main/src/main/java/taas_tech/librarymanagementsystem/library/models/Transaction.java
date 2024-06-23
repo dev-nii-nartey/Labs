@@ -2,7 +2,7 @@ package taas_tech.librarymanagementsystem.library.models;
 
 import java.time.LocalDate;
 
-public class Transaction {
+public class Transaction extends LibraryResource {
     private int id;
     private int bookId;
     private int patronId;

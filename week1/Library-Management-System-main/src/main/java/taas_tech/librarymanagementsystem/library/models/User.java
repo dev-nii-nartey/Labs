@@ -1,6 +1,6 @@
 package taas_tech.librarymanagementsystem.library.models;
 
-public class User {
+public class User extends LibraryResource {
     private int id;
     private String username;
     private String password;

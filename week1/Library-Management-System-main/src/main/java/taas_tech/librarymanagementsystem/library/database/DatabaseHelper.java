@@ -94,6 +94,7 @@ public class DatabaseHelper {
         }
     }
 
+
     public static List<Book> getBooks() {
         List<Book> books = new ArrayList<>();
         String sql = "SELECT * FROM books";
@@ -114,5 +115,28 @@ public class DatabaseHelper {
             System.out.println(e.getMessage());
         }
         return books;
+    }
+
+    // Method to check if a book with the given ID is currently issued
+    public static boolean isBookIssued(int bookId) {
+        String sql = "SELECT isIssued FROM books WHERE id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, bookId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getBoolean("isIssued");
+            } else {
+                // No book found with the specified ID
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error checking if book is issued: " + e.getMessage());
+            return false;
+        }
     }
 }

@@ -50,38 +50,30 @@ CREATE DATABASE library_management
 Use the following SQL script to create the necessary tables:
 USE library_management;
 ```bash
-CREATE DATABASE IF NOT EXISTS library_management;
-
-USE library_management;
-
--- Create the patrons table
-CREATE TABLE IF NOT EXISTS patrons (
+CREATE TABLE patrons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL
 );
 
--- Create the books table
-CREATE TABLE IF NOT EXISTS books (
+CREATE TABLE books (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
+    genre VARCHAR(255) NOT NULL,
     publisher VARCHAR(255),
-    year_published INT,
-    isIssued BOOLEAN DEFAULT FALSE
+    year_published INT
 );
 
--- Create the transactions table with foreign key constraints
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    bookId INT,
-    patronId INT,
-    issueDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    returnDate DATE,
-    FOREIGN KEY (bookId) REFERENCES books(id),
-    FOREIGN KEY (patronId) REFERENCES patrons(id)
+    book_id INT,
+    patron_id INT,
+    issue_date DATE,
+    return_date DATE,
+    FOREIGN KEY (book_id) REFERENCES books(id),
+    FOREIGN KEY (patron_id) REFERENCES patrons(id)
 );
-
 ```
 # step 4: Configure Database Connection
 Download MySQL Connector for Java:
@@ -114,20 +106,3 @@ mvn javafx:run
 #### Login: Use the login screen to access the main dashboard.
 #### Register Patron: Navigate to the patron registration section and enter the required details.
 #### Manage Books: Use the options to add new books, issue books to patrons, and process book returns.
-
-
-
-# Contributing
-We welcome contributions! Please fork the repository and submit a pull request for review.
-
-# License
-This project is licensed under the MIT License. See the LICENSE file for more details.
-
-# Contact
-For any inquiries or support, please contact us at arshadsaeed2709@gmail.com
-
-
-
-
-
-
