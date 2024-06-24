@@ -74,6 +74,12 @@ CREATE TABLE transactions (
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (patron_id) REFERENCES patrons(id)
 );
+  
+ CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
 ```
 # step 4: Configure Database Connection
 Download MySQL Connector for Java:
