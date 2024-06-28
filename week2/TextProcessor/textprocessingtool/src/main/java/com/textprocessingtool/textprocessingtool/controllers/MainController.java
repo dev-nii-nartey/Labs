@@ -1,200 +1,198 @@
 package com.textprocessingtool.textprocessingtool.controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.VBox;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainController {
-
     @FXML
-    private TextArea textArea;
+    private TextField findText;
     @FXML
-    private TextField regexField;
+    private TextField replaceText;
     @FXML
-    private TextField replaceField;
+    private TextField regexPattern;
     @FXML
-    private TextArea resultArea;
+    private TextArea inputText;
     @FXML
-    private Label statusLabel;
-
-    private File currentFile;
-
-    // File Menu Handlers
+    private TextFlow resultTextFlow;
     @FXML
-    private void handleOpen() {
-        FileChooser fileChooser = new FileChooser();
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null) {
-            try {
-                String content = new String(Files.readAllBytes(Paths.get(file.getPath())));
-                textArea.setText(content);
-                statusLabel.setText("File opened: " + file.getName());
-                currentFile = file;
-            } catch (Exception e) {
-                statusLabel.setText("Failed to open file.");
-                e.printStackTrace();
-            }
-        }
-    }
+    private RadioButton exactMatch;
 
-    @FXML
-    private void handleSave() {
-        if (currentFile != null) {
-            try {
-                Files.write(Paths.get(currentFile.getPath()), textArea.getText().getBytes());
-                statusLabel.setText("File saved: " + currentFile.getName());
-            } catch (Exception e) {
-                statusLabel.setText("Failed to save file.");
-                e.printStackTrace();
-            }
-        } else {
-            handleSaveAs();
-        }
-    }
-
-    @FXML
-    private void handleSaveAs() {
-        FileChooser fileChooser = new FileChooser();
-        File file = fileChooser.showSaveDialog(null);
-        if (file != null) {
-            try {
-                Files.write(Paths.get(file.getPath()), textArea.getText().getBytes());
-                statusLabel.setText("File saved: " + file.getName());
-                currentFile = file;
-            } catch (Exception e) {
-                statusLabel.setText("Failed to save file.");
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @FXML
-    private void handleExit() {
-        System.exit(0);
-    }
-
-    // Edit Menu Handlers
-    @FXML
-    private void handleUndo() {
-        textArea.undo();
-    }
-
-    @FXML
-    private void handleRedo() {
-        textArea.redo();
-    }
-
-    @FXML
-    private void handleCut() {
-        textArea.cut();
-    }
-
-    @FXML
-    private void handleCopy() {
-        textArea.copy();
-    }
-
-    @FXML
-    private void handlePaste() {
-        textArea.paste();
-    }
-
-    // Regex Menu Handlers
-    @FXML
-    private void handleInsertPattern() {
-        textArea.insertText(textArea.getCaretPosition(), regexField.getText());
-    }
-
-    @FXML
-    private void handleTestPattern() {
-        String pattern = regexField.getText();
-        String text = textArea.getText();
-
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(text);
-
-        resultArea.clear();
-        while (m.find()) {
-            resultArea.appendText("Match: " + m.group() + " at position: " + m.start() + "\n");
-        }
-
-        statusLabel.setText("Pattern tested.");
-    }
+    private ObservableList<String> matchList = FXCollections.observableArrayList();
+    private Set<String> dataSet = new HashSet<>();
 
     @FXML
     private void handleFind() {
-        String pattern = regexField.getText();
-        String text = textArea.getText();
+        String input = inputText.getText();
+        String toFind = findText.getText();
 
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(text);
-
-        resultArea.clear();
-        while (m.find()) {
-            resultArea.appendText("Match: " + m.group() + " at position: " + m.start() + "\n");
+        if (toFind.isEmpty()) {
+            showAlert("Find field is empty");
+            return;
         }
 
-        statusLabel.setText("Find operation completed.");
+        matchList.clear();
+        resultTextFlow.getChildren().clear();
+
+        String regex = exactMatch.isSelected() ? "\\b" + Pattern.quote(toFind) + "\\b" : Pattern.quote(toFind);
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+
+        int lastIndex = 0;
+        while (matcher.find()) {
+            resultTextFlow.getChildren().add(new Text(input.substring(lastIndex, matcher.start())));
+            Text foundText = new Text(matcher.group());
+            foundText.setStyle("-fx-fill: red;");
+            resultTextFlow.getChildren().add(foundText);
+            matchList.add("Word: " + matcher.group() + " at index: " + matcher.start());
+            lastIndex = matcher.end();
+        }
+        resultTextFlow.getChildren().add(new Text(input.substring(lastIndex)));
     }
 
     @FXML
     private void handleReplace() {
-        String pattern = regexField.getText();
-        String replacement = replaceField.getText();
-        String text = textArea.getText();
+        String input = inputText.getText();
+        String toFind = findText.getText();
+        String toReplace = replaceText.getText();
 
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(text);
+        if (toFind.isEmpty() || toReplace.isEmpty()) {
+            showAlert("Find and/or replace fields are empty");
+            return;
+        }
 
-        String result = m.replaceAll(replacement);
-        textArea.setText(result);
-
-        statusLabel.setText("Replace operation completed.");
+        String regex = exactMatch.isSelected() ? "\\b" + Pattern.quote(toFind) + "\\b" : Pattern.quote(toFind);
+        replaceText(input, regex, toReplace);
     }
 
     @FXML
-    private void handleAbout() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("About");
-        alert.setHeaderText(null);
-        alert.setContentText("Text Processing Tool\nVersion 1.0");
-        alert.showAndWait();
+    private void handleRegexReplace() {
+        String input = inputText.getText();
+        String patternText = regexPattern.getText();
+        String toReplace = replaceText.getText();
+
+        if (patternText.isEmpty() || toReplace.isEmpty()) {
+            showAlert("Regex pattern and/or replace fields are empty");
+            return;
+        }
+
+        replaceText(input, patternText, toReplace, true);
     }
 
     @FXML
-    private void handleHelp() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Help");
-        alert.setHeaderText(null);
-        alert.setContentText("Help content goes here.");
-        alert.showAndWait();
-    }
+    private void handleTestPattern() {
+        String input = inputText.getText();
+        String patternText = regexPattern.getText();
 
-    @FXML
-    private void handleManageData() {
+        if (patternText.isEmpty()) {
+            showAlert("Regex pattern field is empty");
+            return;
+        }
+
+        matchList.clear();
+        resultTextFlow.getChildren().clear();
+
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/textprocessingtool/textprocessingtool/DataManagementLayout.fxml"));
-            VBox root = fxmlLoader.load();
-            Scene scene = new Scene(root);
-            Stage stage = new Stage();
-            stage.setScene(scene);
-            stage.setTitle("Data Management");
-            stage.show();
+            Pattern pattern = Pattern.compile(patternText);
+            Matcher matcher = pattern.matcher(input);
+
+            int lastIndex = 0;
+            while (matcher.find()) {
+                resultTextFlow.getChildren().add(new Text(input.substring(lastIndex, matcher.start())));
+                Text foundText = new Text(matcher.group());
+                foundText.setStyle("-fx-fill: red;");
+                resultTextFlow.getChildren().add(foundText);
+                matchList.add("Word: " + matcher.group() + " at index: " + matcher.start());
+                lastIndex = matcher.end();
+            }
+            resultTextFlow.getChildren().add(new Text(input.substring(lastIndex)));
         } catch (Exception e) {
+            showAlert("Invalid regex pattern");
+        }
+    }
+
+    private void replaceText(String input, String toFind, String toReplace) {
+        String result = input.replaceAll(toFind, toReplace);
+        inputText.setText(result);
+    }
+
+    private void replaceText(String input, String patternText, String toReplace, boolean isRegex) {
+        try {
+            Pattern pattern = Pattern.compile(patternText);
+            Matcher matcher = pattern.matcher(input);
+            String result = matcher.replaceAll(toReplace);
+            inputText.setText(result);
+        } catch (Exception e) {
+            showAlert("Invalid regex pattern");
+        }
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING, message);
+        alert.show();
+    }
+
+    @FXML
+    private void handleAddToCollection() {
+        String input = inputText.getText();
+        if (dataSet.add(input)) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Added to collection");
+            alert.show();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Already in collection");
+            alert.show();
+        }
+    }
+
+    @FXML
+    private void handleShowDataManagement() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/textprocessingtool/textprocessingtool/DataLayout.fxml"));
+            Parent root = loader.load();
+            DataController dataController = loader.getController();
+            dataController.setDataSet(dataSet);
+            Stage stage = new Stage();
+            stage.setTitle("Data Management Tool");
+            stage.setScene(new Scene(root, 600, 400));
+            stage.show();
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleUploadFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        File selectedFile = fileChooser.showOpenDialog(new Stage());
+        if (selectedFile != null) {
+            try {
+                String content = new String(Files.readAllBytes(selectedFile.toPath()));
+                inputText.setText(content);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

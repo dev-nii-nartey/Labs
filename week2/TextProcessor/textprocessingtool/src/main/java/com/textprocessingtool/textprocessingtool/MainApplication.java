@@ -5,15 +5,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class MainApplication extends Application {
     @Override
-    public void start(Stage primaryStage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("/com/textprocessingtool/textprocessingtool/MainLayout.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setTitle("Text Processing Tool");
-        primaryStage.setScene(scene);
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/textprocessingtool/textprocessingtool/MainLayout.fxml"));
+        primaryStage.setTitle("Text Processing and Data Management Tool");
+        primaryStage.setScene(new Scene(loader.load(), 800, 600));
         primaryStage.show();
     }
 
