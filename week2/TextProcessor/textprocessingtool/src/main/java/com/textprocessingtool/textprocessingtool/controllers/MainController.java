@@ -35,24 +35,57 @@ public class MainController {
     @FXML
     private RadioButton exactMatch;
 
-    private ObservableList<String> matchList = FXCollections.observableArrayList();
     private Set<String> dataSet = new HashSet<>();
 
     @FXML
     private void handleFind() {
-        String input = inputText.getText();
-        String toFind = findText.getText();
-
-        if (toFind.isEmpty()) {
+        if (findText.getText().isEmpty()) {
             showAlert("Find field is empty");
             return;
         }
+        performFind();
+    }
 
-        matchList.clear();
+    @FXML
+    private void handleReplace() {
+        if (findText.getText().isEmpty() && regexPattern.getText().isEmpty()) {
+            showAlert("Find and Regex fields are empty");
+            return;
+        }
+        if (!findText.getText().isEmpty()) {
+            performReplace(findText.getText(), replaceText.getText());
+        }
+        if (!regexPattern.getText().isEmpty()) {
+            performReplaceWithPattern(regexPattern.getText(), replaceText.getText());
+        }
+    }
+
+    @FXML
+    private void handleRegexReplace() {
+        if (regexPattern.getText().isEmpty()) {
+            showAlert("Regex field is empty");
+            return;
+        }
+        performReplaceWithPattern(regexPattern.getText(), replaceText.getText());
+    }
+
+    @FXML
+    private void handleTestPattern() {
+        if (regexPattern.getText().isEmpty()) {
+            showAlert("Regex field is empty");
+            return;
+        }
+        performFindWithPattern();
+    }
+
+    private void performFind() {
+        String input = inputText.getText();
+        String toFind = findText.getText();
+        boolean matchExact = exactMatch.isSelected();
+
         resultTextFlow.getChildren().clear();
 
-        String regex = exactMatch.isSelected() ? "\\b" + Pattern.quote(toFind) + "\\b" : Pattern.quote(toFind);
-        Pattern pattern = Pattern.compile(regex);
+        Pattern pattern = matchExact ? Pattern.compile("\\b" + Pattern.quote(toFind) + "\\b") : Pattern.compile(Pattern.quote(toFind));
         Matcher matcher = pattern.matcher(input);
 
         int lastIndex = 0;
@@ -61,52 +94,31 @@ public class MainController {
             Text foundText = new Text(matcher.group());
             foundText.setStyle("-fx-fill: red;");
             resultTextFlow.getChildren().add(foundText);
-            matchList.add("Word: " + matcher.group() + " at index: " + matcher.start());
             lastIndex = matcher.end();
         }
         resultTextFlow.getChildren().add(new Text(input.substring(lastIndex)));
     }
 
-    @FXML
-    private void handleReplace() {
+    private void performReplace(String toFind, String toReplace) {
         String input = inputText.getText();
-        String toFind = findText.getText();
-        String toReplace = replaceText.getText();
+        boolean matchExact = exactMatch.isSelected();
 
-        if (toFind.isEmpty() || toReplace.isEmpty()) {
-            showAlert("Find and/or replace fields are empty");
-            return;
+        Pattern pattern = matchExact ? Pattern.compile("\\b" + Pattern.quote(toFind) + "\\b") : Pattern.compile(Pattern.quote(toFind));
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            matcher.appendReplacement(result, toReplace);
         }
+        matcher.appendTail(result);
 
-        String regex = exactMatch.isSelected() ? "\\b" + Pattern.quote(toFind) + "\\b" : Pattern.quote(toFind);
-        replaceText(input, regex, toReplace);
+        inputText.setText(result.toString());
     }
 
-    @FXML
-    private void handleRegexReplace() {
-        String input = inputText.getText();
-        String patternText = regexPattern.getText();
-        String toReplace = replaceText.getText();
-
-        if (patternText.isEmpty() || toReplace.isEmpty()) {
-            showAlert("Regex pattern and/or replace fields are empty");
-            return;
-        }
-
-        replaceText(input, patternText, toReplace, true);
-    }
-
-    @FXML
-    private void handleTestPattern() {
+    private void performFindWithPattern() {
         String input = inputText.getText();
         String patternText = regexPattern.getText();
 
-        if (patternText.isEmpty()) {
-            showAlert("Regex pattern field is empty");
-            return;
-        }
-
-        matchList.clear();
         resultTextFlow.getChildren().clear();
 
         try {
@@ -119,7 +131,6 @@ public class MainController {
                 Text foundText = new Text(matcher.group());
                 foundText.setStyle("-fx-fill: red;");
                 resultTextFlow.getChildren().add(foundText);
-                matchList.add("Word: " + matcher.group() + " at index: " + matcher.start());
                 lastIndex = matcher.end();
             }
             resultTextFlow.getChildren().add(new Text(input.substring(lastIndex)));
@@ -128,17 +139,20 @@ public class MainController {
         }
     }
 
-    private void replaceText(String input, String toFind, String toReplace) {
-        String result = input.replaceAll(toFind, toReplace);
-        inputText.setText(result);
-    }
+    private void performReplaceWithPattern(String patternText, String toReplace) {
+        String input = inputText.getText();
 
-    private void replaceText(String input, String patternText, String toReplace, boolean isRegex) {
         try {
             Pattern pattern = Pattern.compile(patternText);
             Matcher matcher = pattern.matcher(input);
-            String result = matcher.replaceAll(toReplace);
-            inputText.setText(result);
+            StringBuffer result = new StringBuffer();
+
+            while (matcher.find()) {
+                matcher.appendReplacement(result, toReplace);
+            }
+            matcher.appendTail(result);
+
+            inputText.setText(result.toString());
         } catch (Exception e) {
             showAlert("Invalid regex pattern");
         }
@@ -146,7 +160,7 @@ public class MainController {
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING, message);
-        alert.show();
+        alert.showAndWait();
     }
 
     @FXML
@@ -171,6 +185,8 @@ public class MainController {
             Stage stage = new Stage();
             stage.setTitle("Data Management Tool");
             stage.setScene(new Scene(root, 600, 400));
+            stage.initOwner(inputText.getScene().getWindow());
+            stage.setUserData(this);  // Pass the main controller to the new stage
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -194,5 +210,10 @@ public class MainController {
                 e.printStackTrace();
             }
         }
+    }
+
+    // Add this method
+    public void setInputText(String text) {
+        inputText.setText(text);
     }
 }

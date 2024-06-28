@@ -4,15 +4,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DataController {
     @FXML
-    private TextField keyField;
-    @FXML
-    private TextField valueField;
+    private TextField searchField;
     @FXML
     private ListView<String> listView;
     @FXML
@@ -29,31 +29,43 @@ public class DataController {
     @FXML
     private void initialize() {
         listView.setItems(observableList);
-        listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> keyField.setText(newValue));
     }
 
     @FXML
-    private void handleUpdate() {
-        String key = keyField.getText();
-        String value = valueField.getText();
-
-        if (dataSet.remove(key)) {
-            dataSet.add(value);
-            updateListView();
-            statusLabel.setText("Updated successfully");
+    private void handleEdit() {
+        String selectedItem = listView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            Stage stage = (Stage) listView.getScene().getWindow();
+            MainController mainController = (MainController) stage.getUserData();
+            mainController.setInputText(selectedItem);
+            stage.close();
         } else {
-            statusLabel.setText("Key not found");
+            statusLabel.setText("Status: No item selected for editing");
         }
     }
 
     @FXML
     private void handleDelete() {
-        String key = keyField.getText();
-        if (dataSet.remove(key)) {
+        String selectedItem = listView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            dataSet.remove(selectedItem);
             updateListView();
-            statusLabel.setText("Deleted successfully");
+            statusLabel.setText("Status: Deleted successfully");
         } else {
-            statusLabel.setText("Key not found");
+            statusLabel.setText("Status: No item selected for deletion");
+        }
+    }
+
+    @FXML
+    private void handleSearch() {
+        String query = searchField.getText();
+        if (query.isEmpty()) {
+            updateListView();
+        } else {
+            Set<String> filteredSet = dataSet.stream()
+                    .filter(item -> item.contains(query))
+                    .collect(Collectors.toSet());
+            observableList.setAll(filteredSet);
         }
     }
 

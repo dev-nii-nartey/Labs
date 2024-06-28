@@ -6,7 +6,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -23,8 +22,8 @@
                     <children>
                         <Button onAction="#handleFind" text="Find" />
                         <Button onAction="#handleReplace" text="Replace" />
-                        <Button onAction="#handleRegexReplace" text="Regex Replace" />
                         <Button onAction="#handleTestPattern" text="Test Pattern" />
+                        <Button onAction="#handleRegexReplace" text="Regex Replace" />
                         <Button onAction="#handleAddToCollection" text="Add to Collection" />
                         <Button onAction="#handleShowDataManagement" text="Manage Collection" />
                         <Button onAction="#handleUploadFile" text="Upload File" />
