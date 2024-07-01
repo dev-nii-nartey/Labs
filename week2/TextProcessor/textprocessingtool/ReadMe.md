@@ -67,3 +67,8 @@ Run the MainApplication.java file to start the application.
 
 #### Authors
 Nii Nartey
+
+
+### Additional Note
+An executable JAR file is available in the dist directory.
+run the "run.bat" to start the application.
