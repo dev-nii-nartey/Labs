@@ -11,8 +11,9 @@
             padding: 0;
         }
         .container {
-            width: 50%;
-            margin: 100px auto;
+            width: 90%; /* Adjusted width */
+            max-width: 1200px; /* Max width for larger screens */
+            margin: 50px auto;
             padding: 20px;
             background-color: #ffffff;
             border-radius: 8px;
@@ -82,10 +83,14 @@
         </select>
 
         <button type="submit" class="button">Sort</button>
+        </br>
+        <a href="${pageContext.request.contextPath}/arrays" class="button">View Saved Arrays</a>
     </form>
     <c:if test="${not empty errorMessage}">
         <p class="error">${errorMessage}</p>
     </c:if>
+
+
 </div>
 </body>
 </html>

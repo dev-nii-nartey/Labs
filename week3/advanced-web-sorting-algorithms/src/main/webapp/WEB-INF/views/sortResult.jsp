@@ -11,7 +11,8 @@
             padding: 0;
         }
         .container {
-            width: 50%;
+            width: 90%; /* Adjusted width */
+            max-width: 1200px; /* Max width for larger screens */
             margin: 50px auto;
             padding: 20px;
             background-color: #ffffff;
@@ -20,6 +21,9 @@
         }
         h1, h2, p {
             text-align: center;
+        }
+        h1, h2 {
+            font-family: 'Brush Script MT', cursive; /* Calligraphy font */
         }
         .button {
             display: block;
@@ -70,6 +74,7 @@
     <form action="${pageContext.request.contextPath}/sort" method="get">
         <input type="submit" value="Go Back" class="button">
     </form>
+    <a href="${pageContext.request.contextPath}/arrays" class="button">View Saved Arrays</a>
 </div>
 </body>
 </html>
