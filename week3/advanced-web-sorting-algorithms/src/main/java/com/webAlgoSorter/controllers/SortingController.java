@@ -1,56 +1,72 @@
 package com.webAlgoSorter.controllers;
 
-import com.webAlgoSorter.model.SortRequest;
-import com.webAlgoSorter.service.SortingService;
+import com.webAlgoSorter.services.SortingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@RestController
-@RequestMapping("/api/sorting")
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Controller
 public class SortingController {
 
     @Autowired
     private SortingService sortingService;
 
-    @PostMapping("/heap")
-    public EntityModel<int[]> heapSort(@RequestBody SortRequest request) {
-        int[] sortedArray = sortingService.heapSort(request.getArray());
-        EntityModel<int[]> model = EntityModel.of(sortedArray);
-        model.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(SortingController.class).heapSort(request)).withSelfRel());
-        return model;
+    @GetMapping("/sort")
+    public String showSortForm() {
+        return "sortForm";
     }
 
-    @PostMapping("/quick")
-    public EntityModel<int[]> quickSort(@RequestBody SortRequest request) {
-        int[] sortedArray = sortingService.quickSort(request.getArray(), 0, request.getArray().length - 1);
-        EntityModel<int[]> model = EntityModel.of(sortedArray);
-        model.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(SortingController.class).quickSort(request)).withSelfRel());
-        return model;
+    @PostMapping("/sort")
+    public String sort(@RequestParam("algorithm") String algorithm,
+                       @RequestParam("numbers") String numbers,
+                       Model model) {
+        try {
+            List<Integer> numberList = parseNumbers(numbers);
+            List<Integer> sortedList = new ArrayList<>(numberList); // Make a copy of the original list
+            sortedList = sortingService.sort(algorithm, sortedList);
+            String timeComplexity = sortingService.getTimeComplexity(algorithm);
+
+            model.addAttribute("originalArray", numberList);
+            model.addAttribute("sortedArray", sortedList);
+            model.addAttribute("chosenAlgorithm", algorithm);
+            model.addAttribute("timeComplexity", timeComplexity);
+
+            Map<String, String> alternateAlgorithms = getAlternateAlgorithms(algorithm);
+            model.addAttribute("alternateAlgorithms", alternateAlgorithms);
+
+            return "sortResult";
+        } catch (NumberFormatException e) {
+            model.addAttribute("errorMessage", "Please enter a valid list of integers.");
+            return "sortForm";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "An unexpected error occurred. Please try again.");
+            return "sortForm";
+        }
     }
 
-    @PostMapping("/merge")
-    public EntityModel<int[]> mergeSort(@RequestBody SortRequest request) {
-        int[] sortedArray = sortingService.mergeSort(request.getArray());
-        EntityModel<int[]> model = EntityModel.of(sortedArray);
-        model.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(SortingController.class).mergeSort(request)).withSelfRel());
-        return model;
+
+    private List<Integer> parseNumbers(String numbers) {
+        return Arrays.stream(numbers.split(","))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 
-    @PostMapping("/radix")
-    public EntityModel<int[]> radixSort(@RequestBody SortRequest request) {
-        int[] sortedArray = sortingService.radixSort(request.getArray());
-        EntityModel<int[]> model = EntityModel.of(sortedArray);
-        model.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(SortingController.class).radixSort(request)).withSelfRel());
-        return model;
-    }
+    private Map<String, String> getAlternateAlgorithms(String currentAlgorithm) {
+        Map<String, String> allAlgorithms = new LinkedHashMap<>();
+        allAlgorithms.put("heap", "Heap Sort");
+        allAlgorithms.put("quick", "Quick Sort");
+        allAlgorithms.put("merge", "Merge Sort");
+        allAlgorithms.put("radix", "Radix Sort");
+        allAlgorithms.put("bucket", "Bucket Sort");
 
-    @PostMapping("/bucket")
-    public EntityModel<int[]> bucketSort(@RequestBody SortRequest request) {
-        int[] sortedArray = sortingService.bucketSort(request.getArray());
-        EntityModel<int[]> model = EntityModel.of(sortedArray);
-        model.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(SortingController.class).bucketSort(request)).withSelfRel());
-        return model;
+        allAlgorithms.remove(currentAlgorithm); // Remove the current algorithm from alternatives
+        return allAlgorithms;
     }
 }
