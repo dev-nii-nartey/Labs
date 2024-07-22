@@ -2,26 +2,22 @@ package taas_tech.librarymanagementsystem.library.guiController;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import taas_tech.librarymanagementsystem.Main;
+import taas_tech.librarymanagementsystem.library.service.BookService;
 import taas_tech.librarymanagementsystem.library.database.DatabaseHelper;
+import taas_tech.librarymanagementsystem.library.util.AlertUtil;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 public class ReturnBookController {
     @FXML
     private TextField bookIdField;
 
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+    private BookService bookService;
+
+    public ReturnBookController() {
+        this.bookService = new BookService();
     }
 
     @FXML
@@ -32,33 +28,23 @@ public class ReturnBookController {
         try {
             bookId = Integer.parseInt(bookIdText);
         } catch (NumberFormatException e) {
-            showAlert("Invalid Input", "Book ID must be a number.");
+            AlertUtil.showError("Invalid Input", "Book ID must be a number.");
             return;
         }
 
-        // Update return date in transactions table
-        String sql = "UPDATE transactions SET returnDate = CURRENT_DATE WHERE bookId = ? AND returnDate IS NULL";
-        if (DatabaseHelper.isBookIssued(bookId)) {
-            showAlert("Success", "Book returned successfully.");
-
-            try (Connection conn = DatabaseHelper.connect();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setInt(1, bookId);
-                pstmt.executeUpdate();
-
-                String updateBookSql = "UPDATE books SET isIssued = 0 WHERE id = ?";
-                try (PreparedStatement pstmtUpdate = conn.prepareStatement(updateBookSql)) {
-                    pstmtUpdate.setInt(1, bookId);
-                    pstmtUpdate.executeUpdate();
+        try {
+            if (bookService.isBookIssued(bookId)) {
+                boolean success = bookService.returnBook(bookId);
+                if (success) {
+                    AlertUtil.showInfo("Success", "Book returned successfully.");
+                } else {
+                    AlertUtil.showError("Error", "Failed to return the book.");
                 }
-
-
-            } catch (SQLException e) {
-                showAlert("Database Error", "Error occurred while returning the book.");
-                System.out.println(e.getMessage());
+            } else {
+                AlertUtil.showError("Error", "Book with ID " + bookId + " is not currently issued.");
             }
-        } else {
-            showAlert("Error", "Book with ID " + bookId + " is not currently issued.");
+        } catch (Exception e) {
+            AlertUtil.showError("Database Error", "Error occurred while returning the book: " + e.getMessage());
         }
     }
 

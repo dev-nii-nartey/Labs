@@ -1,49 +1,53 @@
 package taas_tech.librarymanagementsystem.library.guiController;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import taas_tech.librarymanagementsystem.library.database.DatabaseHelper;
+import taas_tech.librarymanagementsystem.library.service.UserService;
+import taas_tech.librarymanagementsystem.library.util.AlertUtil;
+import taas_tech.librarymanagementsystem.library.util.SceneManager;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class LoginController {
-    @FXML
-    private TextField usernameField;
-    @FXML
-    private PasswordField passwordField;
+    @FXML private TextField usernameField;
+    @FXML private PasswordField passwordField;
+
+    private UserService userService;
+
+    public LoginController() {
+        this.userService = new UserService();
+    }
 
     @FXML
     public void login() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        if (username.isEmpty() || password.isEmpty()) {
+            AlertUtil.showError("Login Error", "Username and password cannot be empty.");
+            return;
+        }
 
-        try (Connection conn = DatabaseHelper.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                // Redirect to add_book.fxml
-                Stage stage = (Stage) usernameField.getScene().getWindow();
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/taas_tech/librarymanagementsystem/add_book.fxml"));
-                Scene scene = new Scene(loader.load());
-                stage.setScene(scene);
-                stage.show();
+        try {
+            if (userService.authenticateUser(username, password)) {
+                navigateToAddBookScreen();
             } else {
-                System.out.println("Login failed");
+                AlertUtil.showError("Login Failed", "Invalid username or password.");
             }
-        } catch (SQLException | IOException e) {
+        } catch (Exception e) {
+            AlertUtil.showError("Login Error", "An error occurred during login: " + e.getMessage());
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void navigateToAddBookScreen() {
+        try {
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            SceneManager.loadScene(stage, "/taas_tech/librarymanagementsystem/add_book.fxml");
+        } catch (IOException e) {
+            AlertUtil.showError("Navigation Error", "Failed to load the Add Book screen.");
             System.out.println(e.getMessage());
         }
     }

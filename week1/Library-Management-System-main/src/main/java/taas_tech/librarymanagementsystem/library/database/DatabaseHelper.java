@@ -7,9 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseHelper {
-    private static final String URL = "jdbc:mysql://localhost:3306/library_management";
-    private static final String USER = "root";
-    private static final String PASSWORD = "password";
+    private static  String URL = "jdbc:mysql://localhost:3306/library_management";
+    private static  String USER = "root";
+    private static  String PASSWORD = "password";
+
+    public static void setDatabaseURL(String newURL, String newUser, String newPassword) {
+        URL = newURL;
+        USER = newUser;
+        PASSWORD = newPassword;
+    }
 
     public static Connection connect() {
         Connection conn = null;
@@ -95,27 +101,7 @@ public class DatabaseHelper {
     }
 
 
-    public static List<Book> getBooks() {
-        List<Book> books = new ArrayList<>();
-        String sql = "SELECT * FROM books";
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                Book book = new Book(rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getString("genre"),
-                        rs.getString("publisher"),
-                        rs.getInt("year_published"),
-                        rs.getBoolean("isIssued"));
-                books.add(book);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return books;
-    }
+
 
     // Method to check if a book with the given ID is currently issued
     public static boolean isBookIssued(int bookId) {

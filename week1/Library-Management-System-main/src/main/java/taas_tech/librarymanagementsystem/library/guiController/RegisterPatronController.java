@@ -4,37 +4,31 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import taas_tech.librarymanagementsystem.Main;
-import taas_tech.librarymanagementsystem.library.database.DatabaseHelper;
 import taas_tech.librarymanagementsystem.library.models.Patron;
-
+import taas_tech.librarymanagementsystem.library.service.PatronService;
+import taas_tech.librarymanagementsystem.library.util.AlertUtil;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class RegisterPatronController {
-    @FXML
-    private TextField nameField;
-    @FXML
-    private TextField emailField;
-    @FXML
-    private TableView<Patron> tableView;
-    @FXML
-    private TableColumn<Patron, Integer> idColumn;
-    @FXML
-    private TableColumn<Patron, String> nameColumn;
-    @FXML
-    private TableColumn<Patron, String> emailColumn;
+    @FXML private TextField nameField;
+    @FXML private TextField emailField;
+    @FXML private TableView<Patron> tableView;
+    @FXML private TableColumn<Patron, Integer> idColumn;
+    @FXML private TableColumn<Patron, String> nameColumn;
+    @FXML private TableColumn<Patron, String> emailColumn;
 
     private ObservableList<Patron> patronList;
+    private PatronService patronService;
+
+    public RegisterPatronController() {
+        this.patronService = new PatronService();
+    }
 
     @FXML
     public void initialize() {
@@ -52,57 +46,31 @@ public class RegisterPatronController {
         String email = emailField.getText();
 
         if (name.isEmpty() || email.isEmpty()) {
-            showAlert("Error", "Name and Email fields cannot be empty.", Alert.AlertType.ERROR);
+            AlertUtil.showError("Error", "Name and Email fields cannot be empty.");
             return;
         }
 
-        String sql = "INSERT INTO patrons(name, email) VALUES(?, ?)";
-
-        try (Connection conn = DatabaseHelper.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, email);
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                showAlert("Success", "Patron registered successfully.", Alert.AlertType.INFORMATION);
-                loadPatronData();  // Reload the data after a successful registration
+        try {
+            boolean success = patronService.registerPatron(name, email);
+            if (success) {
+                AlertUtil.showInfo("Success", "Patron registered successfully.");
+                loadPatronData();
             } else {
-                showAlert("Error", "Failed to register patron.", Alert.AlertType.ERROR);
+                AlertUtil.showError("Error", "Failed to register patron.");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert("Error", "An error occurred: " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "An error occurred: " + e.getMessage());
         }
     }
 
     private void loadPatronData() {
-        patronList.clear();
-        String sql = "SELECT * FROM patrons";
-
-        try (Connection conn = DatabaseHelper.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-
-                Patron patron = new Patron(id, name, email);
-                patronList.add(patron);
-            }
+        try {
+            patronList.clear();
+            patronList.addAll(patronService.getAllPatrons());
             tableView.setItems(patronList);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to load patron data: " + e.getMessage());
         }
-    }
-
-    private void showAlert(String title, String message, Alert.AlertType alertType) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     @FXML
