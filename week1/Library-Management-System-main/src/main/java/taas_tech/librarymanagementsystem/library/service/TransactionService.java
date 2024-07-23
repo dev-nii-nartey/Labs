@@ -71,4 +71,18 @@ public class TransactionService {
         }
         return transactions;
     }
+
+    public boolean returnBook(int bookId) {
+        String sql = "UPDATE transactions SET returnDate = CURRENT_DATE WHERE bookId = ? AND returnDate IS NULL";
+
+        try {
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, bookId);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
     }

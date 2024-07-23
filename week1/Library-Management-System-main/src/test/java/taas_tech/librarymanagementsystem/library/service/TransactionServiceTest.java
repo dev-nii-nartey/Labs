@@ -4,10 +4,13 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import taas_tech.librarymanagementsystem.library.models.Transaction;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,6 +21,22 @@ public class TransactionServiceTest {
     private TransactionService transactionService;
     private Connection connection;
 
+//    @BeforeEach
+//    public void setUp() throws SQLException {
+//        HikariConfig config = new HikariConfig();
+//        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+//        HikariDataSource dataSource = new HikariDataSource(config);
+//        connection = dataSource.getConnection();
+//
+//        connection.createStatement().execute("DROP TABLE IF EXISTS transactions");
+//        connection.createStatement().execute("DROP TABLE IF EXISTS books");
+//        connection.createStatement().execute("CREATE TABLE transactions (id INT AUTO_INCREMENT, bookId INT, patronId INT, issueDate DATE, returnDate DATE)");
+//        connection.createStatement().execute("CREATE TABLE books (id INT AUTO_INCREMENT, isIssued BOOLEAN)");
+//
+//        transactionService = new TransactionService(connection);
+//    }
+
+
     @BeforeEach
     public void setUp() throws SQLException {
         HikariConfig config = new HikariConfig();
@@ -25,10 +44,12 @@ public class TransactionServiceTest {
         HikariDataSource dataSource = new HikariDataSource(config);
         connection = dataSource.getConnection();
 
-        connection.createStatement().execute("DROP TABLE IF EXISTS transactions");
-        connection.createStatement().execute("DROP TABLE IF EXISTS books");
-        connection.createStatement().execute("CREATE TABLE transactions (id INT AUTO_INCREMENT, bookId INT, patronId INT, issueDate DATE, returnDate DATE)");
-        connection.createStatement().execute("CREATE TABLE books (id INT AUTO_INCREMENT, isIssued BOOLEAN)");
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS transactions");
+            stmt.execute("DROP TABLE IF EXISTS books");
+            stmt.execute("CREATE TABLE transactions (id INT AUTO_INCREMENT, bookId INT, patronId INT, issueDate DATE, returnDate DATE)");
+            stmt.execute("CREATE TABLE books (id INT AUTO_INCREMENT, isIssued BOOLEAN)");
+        }
 
         transactionService = new TransactionService(connection);
     }
@@ -51,5 +72,22 @@ public class TransactionServiceTest {
 
         List<Transaction> transactions = transactionService.getAllTransactions();
         assertEquals(2, transactions.size());
+    }
+
+    @Test
+    public void testGetAllTransactions_EmptyDatabase() {
+        List<Transaction> transactions = transactionService.getAllTransactions();
+        assertTrue(transactions.isEmpty());
+    }
+
+    @Test
+    public void transactionService_ConstructorWithConnection() throws SQLException {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        HikariDataSource dataSource = new HikariDataSource(config);
+        Connection connection = dataSource.getConnection();
+
+        TransactionService transactionServiceWithConnection = new TransactionService(connection);
+        assertNotNull(transactionServiceWithConnection);
     }
 }

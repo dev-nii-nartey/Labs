@@ -43,4 +43,27 @@ public class PatronServiceTest {
         List<Patron> patrons = patronService.getAllPatrons();
         assertEquals(2, patrons.size());
     }
+
+    @Test
+    public void testGetAllPatrons_EmptyDatabase() throws SQLException {
+        List<Patron> patrons = patronService.getAllPatrons();
+        assertTrue(patrons.isEmpty());
+    }
+
+    @Test
+    public void testGetAllPatrons_LargeNumberOfPatrons() throws SQLException {
+        for (int i = 0; i < 1000; i++) {
+            patronService.registerPatron("Patron " + i, "patron" + i + "@example.com");
+        }
+        List<Patron> patrons = patronService.getAllPatrons();
+        assertEquals(1000, patrons.size());
+    }
+
+
+    @Test
+    public void testRegisterPatron_LongNameAndEmail() throws SQLException {
+        String longName = "A".repeat(256);
+        String longEmail = "a".repeat(245) + "@example.com";
+        assertThrows(RuntimeException.class, () -> patronService.registerPatron(longName, longEmail));
+    }
 }

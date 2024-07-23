@@ -38,4 +38,21 @@ public class UserServiceTest {
         userService.registerUser("johndoe", "password123");
         assertTrue(userService.authenticateUser("johndoe", "password123"));
     }
+
+    @Test
+    public void testAuthenticateUser_NonexistentUser() throws SQLException {
+        assertFalse(userService.authenticateUser("nonexistent", "password123"));
+    }
+
+    @Test
+    public void testAuthenticateUser_WrongPassword() throws SQLException {
+        userService.registerUser("johndoe", "password123");
+        assertFalse(userService.authenticateUser("johndoe", "wrongpassword"));
+    }
+
+    @Test
+    public void testAuthenticateUser_CaseSensitiveUsername() throws SQLException {
+        userService.registerUser("JohnDoe", "password123");
+        assertFalse(userService.authenticateUser("johndoe", "password123"));
+    }
 }
